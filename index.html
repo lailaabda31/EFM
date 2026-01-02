@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord - Assurance Auto Ouarzazate</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap5.min.css"/>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 5px solid #e74c3c;
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: none;
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .kpi-card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .kpi-label {
+            font-size: 1rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .kpi-icon {
+            font-size: 2.5rem;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+        
+        .filters-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        
+        .export-buttons {
+            margin-bottom: 20px;
+        }
+        
+        .contract-table th {
+            background-color: #2c3e50;
+            color: white;
+        }
+        
+        .tiers-badge {
+            background-color: #3498db;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .tous-risques-badge {
+            background-color: #e74c3c;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .footer {
+            background-color: #2c3e50;
+            color: #bdc3c7;
+            padding: 20px 0;
+            margin-top: 40px;
+            text-align: center;
+        }
+        
+        .type-voiture { color: #27ae60; }
+        .type-moto { color: #f39c12; }
+        .type-camion { color: #8e44ad; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-car"></i> Tableau de Bord Interactif</h1>
+                    <h4>Agence d'Assurance Auto Ouarzazate</h4>
+                    <p>Gestion des contrats et analyse des performances</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <img src="https://img.icons8.com/color/96/000000/car-insurance.png" alt="Logo Assurance" height="80">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Section Import/Export -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-file-export"></i> Importation et Exportation des Données</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row export-buttons">
+                            <div class="col-md-3 mb-2">
+                                <button class="btn btn-success w-100" id="importExcelBtn">
+                                    <i class="fas fa-file-excel"></i> Importer Excel
+                                </button>
+                                <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display: none;">
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <button class="btn btn-success w-100" id="exportExcelBtn">
+                                    <i class="fas fa-download"></i> Exporter Excel
+                                </button>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <button class="btn btn-danger w-100" id="exportPdfBtn">
+                                    <i class="fas fa-file-pdf"></i> Exporter PDF
+                                </button>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <button class="btn btn-info w-100" id="exportWordBtn">
+                                    <i class="fas fa-file-word"></i> Exporter Word
+                                </button>
+                            </div>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>Note :</strong> Utilisez les boutons ci-dessus pour importer vos données Excel ou exporter le tableau de bord dans différents formats.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section KPI -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-icon">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <div class="kpi-value" id="kpi-contrats">20</div>
+                    <div class="kpi-label">Nombre de Contrats</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="kpi-value" id="kpi-moyenne">2 130</div>
+                    <div class="kpi-label">Prime Moyenne (MAD)</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <div class="kpi-value" id="kpi-totale">42 600</div>
+                    <div class="kpi-label">Prime Totale (MAD)</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-icon">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <div class="kpi-value" id="kpi-valeur">2 430 000</div>
+                    <div class="kpi-label">Valeur Totale Véhicules (MAD)</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section Filtres -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="filters-section">
+                    <h5><i class="fas fa-filter"></i> Filtrage des Données</h5>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label for="villeFilter" class="form-label">Ville</label>
+                            <select class="form-select" id="villeFilter">
+                                <option value="">Toutes les villes</option>
+                                <option value="Ouarzazate">Ouarzazate</option>
+                                <option value="Marrakech">Marrakech</option>
+                                <option value="Babar">Babar</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="assuranceFilter" class="form-label">Type d'assurance</label>
+                            <select class="form-select" id="assuranceFilter">
+                                <option value="">Tous les types</option>
+                                <option value="Tiers">Tiers</option>
+                                <option value="Tiers+">Tiers+</option>
+                                <option value="Tous Risques">Tous Risques</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="vehiculeFilter" class="form-label">Type de véhicule</label>
+                            <select class="form-select" id="vehiculeFilter">
+                                <option value="">Tous les types</option>
+                                <option value="Voiture">Voiture</option>
+                                <option value="Moto">Moto</option>
+                                <option value="Camion">Camion</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12 text-end">
+                            <button class="btn btn-secondary" id="resetFiltersBtn">
+                                <i class="fas fa-redo"></i> Réinitialiser les filtres
+                            </button>
+                            <button class="btn btn-primary" id="applyFiltersBtn">
+                                <i class="fas fa-search"></i> Appliquer les filtres
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tableau des Contrats -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="fas fa-table"></i> Tableau des Contrats</h5>
+                    </div>
+                    <div class="card-body">
+                        <table id="contratsTable" class="table table-striped table-hover contract-table" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nom & Prénom</th>
+                                    <th>CIN</th>
+                                    <th>Ville</th>
+                                    <th>Type Véhicule</th>
+                                    <th>Marque</th>
+                                    <th>Année</th>
+                                    <th>Valeur (MAD)</th>
+                                    <th>Type Assurance</th>
+                                    <th>Prime Base (MAD)</th>
+                                    <th>Date Souscription</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Les données seront chargées dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Graphiques -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Répartition par Type d'Assurance</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="assuranceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Répartition par Type de Véhicule</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="vehiculeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Assurance Auto Ouarzazate</h5>
+                    <p>"Votre sécurité, notre priorité"</p>
+                    <p>Ouarzazate - Année 2025/2026</p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Examen de Fin de Module</h5>
+                    <p>Culture et Techniques Avancée du Numérique</p>
+                    <p>Groupe : DEVOWFS201 - Said GAHI</p>
+                </div>
+            </div>
+            <hr style="border-color: #7f8c8d;">
+            <div class="row">
+                <div class="col-12">
+                    <p class="mb-0">
+                        <small>
+                            <i class="fas fa-code"></i> Développé avec l'aide de l'outil IA DeepSeek | 
+                            HTML/CSS, Bootstrap, jQuery, Chart.js, SheetJS, jsPDF
+                        </small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- DataTables -->
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap5.min.js"></script>
+    
+    <!-- Export Libraries -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+    
+    <!-- SheetJS pour lecture Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- jsPDF pour export PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Chart.js pour graphiques -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- docx pour export Word -->
+    <script src="https://cdn.jsdelivr.net/npm/docx@7.8.0/build/index.min.js"></script>
+    
+    <!-- Notre script principal -->
+    <script>
+        // Note IA : Ce code utilise DeepSeek pour la génération de certaines fonctions d'export
+        
+        // Données initiales (simulées)
+        const initialData = [
+            {
+                id: 1,
+                nom: "El Amrani Youssef",
+                cin: "AB00001",
+                ville: "Ouarzazate",
+                typeVehicule: "Moto",
+                marque: "Renault",
+                annee: 2011,
+                valeur: 93000,
+                typeAssurance: "Tiers",
+                primeBase: 1560,
+                dateSouscription: "02/01/2025"
+            },
+            {
+                id: 2,
+                nom: "Alt Lahcen Fatima",
+                cin: "AB00002",
+                ville: "Ouarzazate",
+                typeVehicule: "Camion",
+                marque: "Toyota",
+                annee: 2012,
+                valeur: 96000,
+                typeAssurance: "Tous Risques",
+                primeBase: 1620,
+                dateSouscription: "03/01/2025"
+            },
+            {
+                id: 3,
+                nom: "Benali Ahmed",
+                cin: "AB00003",
+                ville: "Marrakech",
+                typeVehicule: "Voiture",
+                marque: "Hyundai",
+                annee: 2013,
+                valeur: 99000,
+                typeAssurance: "Tiers",
+                primeBase: 1680,
+                dateSouscription: "04/01/2025"
+            },
+            {
+                id: 4,
+                nom: "El Vafael Salma",
+                cin: "AB00004",
+                ville: "Babar",
+                typeVehicule: "Moto",
+                marque: "Ford",
+                annee: 2014,
+                valeur: 100000,
+                typeAssurance: "Tiers",
+                primeBase: 1740,
+                dateSouscription: "05/01/2025"
+            },
+            {
+                id: 5,
+                nom: "Khalid Alami",
+                cin: "AB00005",
+                ville: "Ouarzazate",
+                typeVehicule: "Voiture",
+                marque: "Peugeot",
+                annee: 2020,
+                valeur: 180000,
+                typeAssurance: "Tous Risques",
+                primeBase: 2100,
+                dateSouscription: "10/01/2025"
+            },
+            {
+                id: 6,
+                nom: "Samira Belhaj",
+                cin: "AB00006",
+                ville: "Marrakech",
+                typeVehicule: "Voiture",
+                marque: "Dacia",
+                annee: 2018,
+                valeur: 120000,
+                typeAssurance: "Tiers+",
+                primeBase: 1950,
+                dateSouscription: "12/01/2025"
+            },
+            {
+                id: 7,
+                nom: "Hassan Berrada",
+                cin: "AB00007",
+                ville: "Ouarzazate",
+                typeVehicule: "Camion",
+                marque: "Mercedes",
+                annee: 2015,
+                valeur: 350000,
+                typeAssurance: "Tous Risques",
+                primeBase: 4200,
+                dateSouscription: "15/01/2025"
+            }
+        ];
+        
+        let currentData = [...initialData];
+        let assuranceChart, vehiculeChart;
+        
+        $(document).ready(function() {
+            // Initialiser DataTable
+            initDataTable();
+            
+            // Initialiser les graphiques
+            initCharts();
+            
+            // Mettre à jour les KPIs
+            updateKPIs();
+            
+            // Événements pour les boutons d'import/export
+            $('#importExcelBtn').click(function() {
+                $('#excelFileInput').click();
+            });
+            
+            $('#excelFileInput').change(function(e) {
+                importExcelFile(e.target.files[0]);
+            });
+            
+            $('#exportExcelBtn').click(function() {
+                exportToExcel();
+            });
+            
+            $('#exportPdfBtn').click(function() {
+                exportToPDF();
+            });
+            
+            $('#exportWordBtn').click(function() {
+                exportToWord();
+            });
+            
+            // Événements pour les filtres
+            $('#applyFiltersBtn').click(function() {
+                applyFilters();
+            });
+            
+            $('#resetFiltersBtn').click(function() {
+                resetFilters();
+            });
+            
+            // Appliquer les filtres automatiquement quand les sélections changent
+            $('#villeFilter, #assuranceFilter, #vehiculeFilter').change(function() {
+                applyFilters();
+            });
+        });
+        
+        function initDataTable() {
+            $('#contratsTable').DataTable({
+                data: currentData,
+                columns: [
+                    { data: 'id' },
+                    { data: 'nom' },
+                    { data: 'cin' },
+                    { data: 'ville' },
+                    { 
+                        data: 'typeVehicule',
+                        render: function(data, type, row) {
+                            let icon = '';
+                            let colorClass = '';
+                            
+                            if (data === 'Voiture') {
+                                icon = '<i class="fas fa-car"></i>';
+                                colorClass = 'type-voiture';
+                            } else if (data === 'Moto') {
+                                icon = '<i class="fas fa-motorcycle"></i>';
+                                colorClass = 'type-moto';
+                            } else if (data === 'Camion') {
+                                icon = '<i class="fas fa-truck"></i>';
+                                colorClass = 'type-camion';
+                            }
+                            
+                            return `<span class="${colorClass}">${icon} ${data}</span>`;
+                        }
+                    },
+                    { data: 'marque' },
+                    { data: 'annee' },
+                    { 
+                        data: 'valeur',
+                        render: function(data) {
+                            return new Intl.NumberFormat('fr-MA').format(data);
+                        }
+                    },
+                    { 
+                        data: 'typeAssurance',
+                        render: function(data) {
+                            let badgeClass = data === 'Tous Risques' ? 'tous-risques-badge' : 'tiers-badge';
+                            return `<span class="${badgeClass}">${data}</span>`;
+                        }
+                    },
+                    { 
+                        data: 'primeBase',
+                        render: function(data) {
+                            return new Intl.NumberFormat('fr-MA').format(data);
+                        }
+                    },
+                    { data: 'dateSouscription' }
+                ],
+                pageLength: 10,
+                responsive: true,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/fr-FR.json'
+                },
+                dom: 'Bfrtip',
+                buttons: [
+                    'copy', 'csv', 'print'
+                ]
+            });
+        }
+        
+        function initCharts() {
+            const ctx1 = document.getElementById('assuranceChart').getContext('2d');
+            const ctx2 = document.getElementById('vehiculeChart').getContext('2d');
+            
+            // Données pour les graphiques
+            const assuranceData = countByType('typeAssurance');
+            const vehiculeData = countByType('typeVehicule');
+            
+            // Graphique pour les types d'assurance
+            assuranceChart = new Chart(ctx1, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(assuranceData),
+                    datasets: [{
+                        data: Object.values(assuranceData),
+                        backgroundColor: [
+                            '#3498db', // Tiers
+                            '#2ecc71', // Tiers+
+                            '#e74c3c'  // Tous Risques
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.raw + ' contrats';
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Graphique pour les types de véhicules
+            vehiculeChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(vehiculeData),
+                    datasets: [{
+                        label: 'Nombre de véhicules',
+                        data: Object.values(vehiculeData),
+                        backgroundColor: [
+                            '#27ae60', // Voiture
+                            '#f39c12', // Moto
+                            '#8e44ad'  // Camion
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        function countByType(property) {
+            const counts = {};
+            
+            currentData.forEach(item => {
+                const value = item[property];
+                counts[value] = (counts[value] || 0) + 1;
+            });
+            
+            return counts;
+        }
+        
+        function updateKPIs() {
+            const totalContrats = currentData.length;
+            const totalPrimes = currentData.reduce((sum, item) => sum + item.primeBase, 0);
+            const moyennePrimes = totalContrats > 0 ? Math.round(totalPrimes / totalContrats) : 0;
+            const totalValeur = currentData.reduce((sum, item) => sum + item.valeur, 0);
+            
+            $('#kpi-contrats').text(totalContrats);
+            $('#kpi-moyenne').text(new Intl.NumberFormat('fr-MA').format(moyennePrimes));
+            $('#kpi-totale').text(new Intl.NumberFormat('fr-MA').format(totalPrimes));
+            $('#kpi-valeur').text(new Intl.NumberFormat('fr-MA').format(totalValeur));
+        }
+        
+        function applyFilters() {
+            const ville = $('#villeFilter').val();
+            const assurance = $('#assuranceFilter').val();
+            const vehicule = $('#vehiculeFilter').val();
+            
+            // Filtrer les données
+            let filteredData = initialData.filter(item => {
+                let match = true;
+                
+                if (ville && item.ville !== ville) match = false;
+                if (assurance && item.typeAssurance !== assurance) match = false;
+                if (vehicule && item.typeVehicule !== vehicule) match = false;
+                
+                return match;
+            });
+            
+            currentData = filteredData;
+            
+            // Mettre à jour la DataTable
+            const table = $('#contratsTable').DataTable();
+            table.clear();
+            table.rows.add(currentData).draw();
+            
+            // Mettre à jour les graphiques
+            updateCharts();
+            
+            // Mettre à jour les KPIs
+            updateKPIs();
+        }
+        
+        function resetFilters() {
+            $('#villeFilter').val('');
+            $('#assuranceFilter').val('');
+            $('#vehiculeFilter').val('');
+            
+            currentData = [...initialData];
+            
+            // Mettre à jour la DataTable
+            const table = $('#contratsTable').DataTable();
+            table.clear();
+            table.rows.add(currentData).draw();
+            
+            // Mettre à jour les graphiques
+            updateCharts();
+            
+            // Mettre à jour les KPIs
+            updateKPIs();
+        }
+        
+        function updateCharts() {
+            const assuranceData = countByType('typeAssurance');
+            const vehiculeData = countByType('typeVehicule');
+            
+            // Mettre à jour le graphique des assurances
+            assuranceChart.data.labels = Object.keys(assuranceData);
+            assuranceChart.data.datasets[0].data = Object.values(assuranceData);
+            assuranceChart.update();
+            
+            // Mettre à jour le graphique des véhicules
+            vehiculeChart.data.labels = Object.keys(vehiculeData);
+            vehiculeChart.data.datasets[0].data = Object.values(vehiculeData);
+            vehiculeChart.update();
+        }
+        
+        // Fonction d'import Excel
+        function importExcelFile(file) {
+            if (!file) return;
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const data = e.target.result;
+                const workbook = XLSX.read(data, { type: 'binary' });
+                
+                // Prendre la première feuille
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // Convertir en JSON
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                
+                if (jsonData.length > 0) {
+                    // Mapper les données (adaptez selon votre structure Excel)
+                    const mappedData = jsonData.map((row, index) => {
+                        return {
+                            id: index + 1,
+                            nom: row['Nom & Prénom'] || row['Nom'] || '',
+                            cin: row['CIN'] || row['ID'] || `AB0000${index+1}`,
+                            ville: row['Ville'] || 'Ouarzazate',
+                            typeVehicule: row['Type Véhicule'] || row['TypeVehicule'] || 'Voiture',
+                            marque: row['Marque'] || 'Inconnue',
+                            annee: row['Année'] || 2020,
+                            valeur: row['Valeur (MAD)'] || row['Valeur'] || 100000,
+                            typeAssurance: row['Type Assurance'] || row['TypeAssurance'] || 'Tiers',
+                            primeBase: row['Prime Base (MAD)'] || row['PrimeBase'] || 1500,
+                            dateSouscription: row['Date Souscription'] || '01/01/2025'
+                        };
+                    });
+                    
+                    // Mettre à jour les données
+                    initialData = mappedData;
+                    currentData = [...mappedData];
+                    
+                    // Mettre à jour la DataTable
+                    const table = $('#contratsTable').DataTable();
+                    table.clear();
+                    table.rows.add(currentData).draw();
+                    
+                    // Mettre à jour les graphiques
+                    updateCharts();
+                    
+                    // Mettre à jour les KPIs
+                    updateKPIs();
+                    
+                    alert(`Fichier importé avec succès ! ${mappedData.length} contrats chargés.`);
+                }
+            };
+            
+            reader.readAsBinaryString(file);
+        }
+        
+        // Fonction d'export Excel
+        function exportToExcel() {
+            // Préparer les données pour l'export
+            const exportData = currentData.map(item => {
+                return {
+                    'ID': item.id,
+                    'Nom & Prénom': item.nom,
+                    'CIN': item.cin,
+                    'Ville': item.ville,
+                    'Type Véhicule': item.typeVehicule,
+                    'Marque': item.marque,
+                    'Année': item.annee,
+                    'Valeur (MAD)': item.valeur,
+                    'Type Assurance': item.typeAssurance,
+                    'Prime Base (MAD)': item.primeBase,
+                    'Date Souscription': item.dateSouscription
+                };
+            });
+            
+            // Créer une feuille de calcul
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Contrats");
+            
+            // Ajouter une feuille pour les KPIs
+            const kpiData = [
+                ['Indicateur', 'Valeur'],
+                ['Nombre de contrats', currentData.length],
+                ['Prime moyenne (MAD)', Math.round(currentData.reduce((s, i) => s + i.primeBase, 0) / currentData.length)],
+                ['Prime totale (MAD)', currentData.reduce((s, i) => s + i.primeBase, 0)],
+                ['Valeur totale véhicules (MAD)', currentData.reduce((s, i) => s + i.valeur, 0)]
+            ];
+            
+            const ws2 = XLSX.utils.aoa_to_sheet(kpiData);
+            XLSX.utils.book_append_sheet(wb, ws2, "Indicateurs");
+            
+            // Exporter le fichier
+            XLSX.writeFile(wb, `TableauDeBord_Assurance_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+        
+        // Fonction d'export PDF
+        function exportToPDF() {
+            // Note IA : Cette fonction utilise jsPDF, générée avec l'aide de DeepSeek
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+            
+            // Titre
+            doc.setFontSize(20);
+            doc.text('Tableau de Bord - Assurance Auto Ouarzazate', 15, 20);
+            
+            doc.setFontSize(12);
+            doc.text(`Export généré le : ${new Date().toLocaleDateString('fr-FR')}`, 15, 30);
+            
+            // KPIs
+            doc.setFontSize(16);
+            doc.text('Indicateurs Clés', 15, 45);
+            
+            const totalContrats = currentData.length;
+            const totalPrimes = currentData.reduce((sum, item) => sum + item.primeBase, 0);
+            const moyennePrimes = totalContrats > 0 ? Math.round(totalPrimes / totalContrats) : 0;
+            const totalValeur = currentData.reduce((sum, item) => sum + item.valeur, 0);
+            
+            doc.setFontSize(12);
+            doc.text(`Nombre de contrats: ${totalContrats}`, 15, 60);
+            doc.text(`Prime moyenne: ${new Intl.NumberFormat('fr-MA').format(moyennePrimes)} MAD`, 15, 70);
+            doc.text(`Prime totale: ${new Intl.NumberFormat('fr-MA').format(totalPrimes)} MAD`, 15, 80);
+            doc.text(`Valeur totale véhicules: ${new Intl.NumberFormat('fr-MA').format(totalValeur)} MAD`, 15, 90);
+            
+            // En-tête du tableau
+            doc.setFontSize(14);
+            doc.text('Liste des Contrats', 15, 110);
+            
+            // Préparer les données du tableau
+            const tableData = currentData.map(item => [
+                item.id,
+                item.nom,
+                item.cin,
+                item.ville,
+                item.typeVehicule,
+                item.marque,
+                item.annee,
+                new Intl.NumberFormat('fr-MA').format(item.valeur),
+                item.typeAssurance,
+                new Intl.NumberFormat('fr-MA').format(item.primeBase),
+                item.dateSouscription
+            ]);
+            
+            // Ajouter le tableau (version simplifiée)
+            doc.autoTable({
+                startY: 115,
+                head: [['ID', 'Nom', 'CIN', 'Ville', 'Véhicule', 'Marque', 'Année', 'Valeur', 'Assurance', 'Prime', 'Date']],
+                body: tableData,
+                theme: 'grid',
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [44, 62, 80] }
+            });
+            
+            // Pied de page
+            const pageCount = doc.internal.getNumberOfPages();
+            for(let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(10);
+                doc.text(`Page ${i} / ${pageCount}`, 280, 200, null, null, 'right');
+                doc.text('Assurance Auto Ouarzazate - 2025/2026', 15, 200);
+            }
+            
+            // Sauvegarder le PDF
+            doc.save(`TableauDeBord_Assurance_${new Date().toISOString().slice(0,10)}.pdf`);
+        }
+        
+        // Fonction d'export Word
+        async function exportToWord() {
+            // Note IA : Cette fonction utilise docx.js, générée avec l'aide de DeepSeek
+            
+            const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, HeadingLevel } = window.docx;
+            
+            // Calcul des KPIs
+            const totalContrats = currentData.length;
+            const totalPrimes = currentData.reduce((sum, item) => sum + item.primeBase, 0);
+            const moyennePrimes = totalContrats > 0 ? Math.round(totalPrimes / totalContrats) : 0;
+            const totalValeur = currentData.reduce((sum, item) => sum + item.valeur, 0);
+            
+            // Création du document
+            const doc = new Document({
+                sections: [{
+                    properties: {},
+                    children: [
+                        // Titre
+                        new Paragraph({
+                            text: "Tableau de Bord - Assurance Auto Ouarzazate",
+                            heading: HeadingLevel.TITLE,
+                            spacing: { after: 200 }
+                        }),
+                        
+                        // Sous-titre
+                        new Paragraph({
+                            text: `Export généré le : ${new Date().toLocaleDateString('fr-FR')}`,
+                            spacing: { after: 200 }
+                        }),
+                        
+                        // Section Indicateurs
+                        new Paragraph({
+                            text: "Indicateurs Clés",
+                            heading: HeadingLevel.HEADING_1,
+                            spacing: { after: 100 }
+                        }),
+                        
+                        // Tableau des indicateurs
+                        new Table({
+                            rows: [
+                                new TableRow({
+                                    children: [
+                                        new TableCell({ children: [new Paragraph("Indicateur")], width: { size: 70, type: WidthType.PERCENTAGE } }),
+                                        new TableCell({ children: [new Paragraph("Valeur")], width: { size: 30, type: WidthType.PERCENTAGE } })
+                                    ]
+                                }),
+                                new TableRow({
+                                    children: [
+                                        new TableCell({ children: [new Paragraph("Nombre de contrats")] }),
+                                        new TableCell({ children: [new Paragraph(totalContrats.toString())] })
+                                    ]
+                                }),
+                                new TableRow({
+                                    children: [
+                                        new TableCell({ children: [new Paragraph("Prime moyenne (MAD)")] }),
+                                        new TableCell({ children: [new Paragraph(new Intl.NumberFormat('fr-MA').format(moyennePrimes))] })
+                                    ]
+                                }),
+                                new TableRow({
+                                    children: [
+                                        new TableCell({ children: [new Paragraph("Prime totale (MAD)")] }),
+                                        new TableCell({ children: [new Paragraph(new Intl.NumberFormat('fr-MA').format(totalPrimes))] })
+                                    ]
+                                }),
+                                new TableRow({
+                                    children: [
+                                        new TableCell({ children: [new Paragraph("Valeur totale véhicules (MAD)")] }),
+                                        new TableCell({ children: [new Paragraph(new Intl.NumberFormat('fr-MA').format(totalValeur))] })
+                                    ]
+                                })
+                            ],
+                            width: { size: 100, type: WidthType.PERCENTAGE }
+                        }),
+                        
+                        new Paragraph({ text: "", spacing: { after: 200 } }),
+                        
+                        // Section Contrats
+                        new Paragraph({
+                            text: "Liste des Contrats",
+                            heading: HeadingLevel.HEADING_1,
+                            spacing: { after: 100 }
+                        }),
+                        
+                        // Tableau des contrats
+                        new Table({
+                            rows: [
+                                // En-tête
+                                new TableRow({
+                                    children: [
+                                        new TableCell({ children: [new Paragraph("ID")] }),
+                                        new TableCell({ children: [new Paragraph("Nom")] }),
+                                        new TableCell({ children: [new Paragraph("CIN")] }),
+                                        new TableCell({ children: [new Paragraph("Ville")] }),
+                                        new TableCell({ children: [new Paragraph("Véhicule")] }),
+                                        new TableCell({ children: [new Paragraph("Marque")] }),
+                                        new TableCell({ children: [new Paragraph("Année")] }),
+                                        new TableCell({ children: [new Paragraph("Valeur")] }),
+                                        new TableCell({ children: [new Paragraph("Assurance")] }),
+                                        new TableCell({ children: [new Paragraph("Prime")] }),
+                                        new TableCell({ children: [new Paragraph("Date")] })
+                                    ]
+                                }),
+                                // Données
+                                ...currentData.map(item => new TableRow({
+                                    children: [
+                                        new TableCell({ children: [new Paragraph(item.id.toString())] }),
+                                        new TableCell({ children: [new Paragraph(item.nom)] }),
+                                        new TableCell({ children: [new Paragraph(item.cin)] }),
+                                        new TableCell({ children: [new Paragraph(item.ville)] }),
+                                        new TableCell({ children: [new Paragraph(item.typeVehicule)] }),
+                                        new TableCell({ children: [new Paragraph(item.marque)] }),
+                                        new TableCell({ children: [new Paragraph(item.annee.toString())] }),
+                                        new TableCell({ children: [new Paragraph(new Intl.NumberFormat('fr-MA').format(item.valeur))] }),
+                                        new TableCell({ children: [new Paragraph(item.typeAssurance)] }),
+                                        new TableCell({ children: [new Paragraph(new Intl.NumberFormat('fr-MA').format(item.primeBase))] }),
+                                        new TableCell({ children: [new Paragraph(item.dateSouscription)] })
+                                    ]
+                                }))
+                            ],
+                            width: { size: 100, type: WidthType.AUTO }
+                        }),
+                        
+                        // Pied de page
+                        new Paragraph({
+                            text: "",
+                            spacing: { before: 400 }
+                        }),
+                        new Paragraph({
+                            children: [
+                                new TextRun({
+                                    text: "Assurance Auto Ouarzazate - ",
+                                    bold: true
+                                }),
+                                new TextRun("Votre sécurité, notre priorité")
+                            ]
+                        }),
+                        new Paragraph({
+                            text: `Export généré avec l'outil IA DeepSeek - Groupe DEVOWFS201 - Année 2025/2026`
+                        })
+                    ]
+                }]
+            });
+            
+            // Générer le document
+            const blob = await Packer.toBlob(doc);
+            
+            // Télécharger le fichier
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `TableauDeBord_Assurance_${new Date().toISOString().slice(0,10)}.docx`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
